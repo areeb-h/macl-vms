@@ -1,56 +1,64 @@
-version: '3.8'
+version: "3.8"
 
 services:
   mysql:
-    image: mysql:8
-    restart: always
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: macl_vms
-      MYSQL_USER: user
+      MYSQL_USER: macl
       MYSQL_PASSWORD: password
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
-      - macl_network
+      - app_network
 
   backend:
-    build: ./backend
-    restart: always
-    depends_on:
-      - mysql
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: laravel_app
+    restart: unless-stopped
     environment:
-      APP_ENV: local
+      APP_ENV: production
+      APP_DEBUG: false
+      APP_KEY: base64:random-generated-key
+      DB_CONNECTION: mysql
       DB_HOST: mysql
+      DB_PORT: 3306
       DB_DATABASE: macl_vms
-      DB_USERNAME: user
+      DB_USERNAME: macl
       DB_PASSWORD: password
     ports:
       - "8000:8000"
+    depends_on:
+      - mysql
     volumes:
       - ./backend:/var/www/html
     networks:
-      - macl_network
+      - app_network
 
   frontend:
-    build: ./frontend
-    restart: always
-    depends_on:
-      - backend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: nextjs_app
+    restart: unless-stopped
     environment:
-      NEXT_PUBLIC_API_URL: http://backend:8000
+      NEXT_PUBLIC_API_URL: "http://backend:8000"
     ports:
       - "3000:3000"
-    volumes:
-      - ./frontend:/app
+    depends_on:
+      - backend
     networks:
-      - macl_network
+      - app_network
+
+networks:
+  app_network:
 
 volumes:
   mysql_data:
-
-networks:
-  macl_network:
-    driver: bridge
