@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('phone_number', 20);
             $table->string('purpose_of_visit', 255);
             $table->date('expected_check_in_date')->index();
+            $table->timestamp('checked_in_at')->nullable()->index(); 
             $table->string('nationality', 50);
             $table->char('unique_code', 10)->unique(); 
             $table->timestamps();

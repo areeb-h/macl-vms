@@ -1,101 +1,203 @@
-import Image from "next/image";
+"use client";
+import React, { useState, useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Check, Search, Loader2, User, Mail, Phone, Globe } from "lucide-react";
+import { useVisitorStore } from "@/lib/store/visitor";
 
-export default function Home() {
+const CheckInPage = () => {
+  const [uniqueCode, setUniqueCode] = useState("");
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
+  const { visitorDetails, loading, fetchVisitorByCode, checkInVisitor } =
+    useVisitorStore();
+
+  useEffect(() => {
+    if (visitorDetails) {
+      console.log("✅ Visitor Updated:", visitorDetails);
+    }
+  }, [visitorDetails]); // ✅ React to Zustand state changes
+
+  const handleFetchVisitor = async () => {
+    if (!uniqueCode.trim()) {
+      setStatusMessage("Please enter a valid unique code.");
+      return;
+    }
+    setStatusMessage(null);
+    const { success, error } = await fetchVisitorByCode(uniqueCode);
+    if (!success) setStatusMessage("Visitor not found.");
+  };
+
+  const handleCheckIn = async () => {
+    if (!visitorDetails) return;
+    setStatusMessage(null);
+
+    const { success, error } = await checkInVisitor(uniqueCode);
+
+    if (success) {
+      setStatusMessage("Check-in successful!");
+
+      // ✅ Directly update Zustand store to reflect checked-in status
+      useVisitorStore.setState((state) => ({
+        visitorDetails: state.visitorDetails
+          ? { ...state.visitorDetails, checked_in_at: new Date().toISOString() }
+          : null,
+      }));
+
+      console.log(
+        "✅ Zustand Updated - Visitor Checked In:",
+        useVisitorStore.getState().visitorDetails
+      );
+    } else {
+      setStatusMessage(error || "Check-in failed.");
+    }
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="min-h-screen bg-gray-50 p-4 flex items-center justify-center">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-6">
+          <h1 className="text-xl font-medium text-gray-900">
+            Visitor Check-in
+          </h1>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        <Card className="shadow-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-sm font-medium text-gray-700">
+              Enter Check-in Details
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label
+                htmlFor="unique_code"
+                className="text-xs font-medium text-gray-600"
+              >
+                Unique Code
+              </Label>
+              <div className="relative">
+                <Input
+                  id="unique_code"
+                  type="text"
+                  placeholder="Enter code..."
+                  value={uniqueCode}
+                  onChange={(e) => setUniqueCode(e.target.value)}
+                  className="pr-10 h-9 text-sm"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleFetchVisitor();
+                    }
+                  }}
+                />
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                  onClick={handleFetchVisitor}
+                  disabled={loading || !uniqueCode.trim()}
+                >
+                  {loading ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-gray-500" />
+                  ) : (
+                    <Search className="w-4 h-4 text-gray-400" />
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            {statusMessage && (
+              <div
+                className={`p-2 rounded text-xs ${statusMessage.includes("successful") ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-700"}`}
+              >
+                {statusMessage}
+              </div>
+            )}
+
+            {/* Visitor Details Section */}
+            {visitorDetails && (
+              <div className="mt-6 pt-6 border-t border-gray-100">
+                <h3 className="text-sm font-medium text-gray-700 mb-4">
+                  Visitor Information
+                </h3>
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-center space-x-2">
+                    <User className="w-4 h-4 text-gray-400" />
+                    <div>
+                      <p className="text-xs text-gray-500">Name</p>
+                      <p className="text-gray-700">
+                        {visitorDetails.full_name}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Mail className="w-4 h-4 text-gray-400" />
+                    <div>
+                      <p className="text-xs text-gray-500">Email</p>
+                      <p className="text-gray-700">{visitorDetails.email}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Phone className="w-4 h-4 text-gray-400" />
+                    <div>
+                      <p className="text-xs text-gray-500">Phone</p>
+                      <p className="text-gray-700">
+                        {visitorDetails.phone_number}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Globe className="w-4 h-4 text-gray-400" />
+                    <div>
+                      <p className="text-xs text-gray-500">Nationality</p>
+                      <p className="text-gray-700">
+                        {visitorDetails.nationality}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Check className="w-4 h-4 text-gray-400" />
+                    <div>
+                      <p className="text-xs text-gray-500">Status</p>
+                      {visitorDetails.checked_in_at ? (
+                        <p className="text-green-600 text-sm">Checked In</p>
+                      ) : (
+                        <p className="text-amber-600 text-sm">Pending</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* ✅ Only show check-in button if visitor is still "Pending" */}
+                {!visitorDetails.checked_in_at && (
+                  <Button
+                    className="w-full mt-4 h-9 text-sm"
+                    onClick={handleCheckIn}
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <span className="flex items-center gap-1">
+                        Check In <Check className="w-4 h-4" />
+                      </span>
+                    )}
+                  </Button>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
-}
+};
+
+export default CheckInPage;

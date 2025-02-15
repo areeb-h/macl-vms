@@ -15,7 +15,6 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->string('name', 150);
             $table->string('email')->unique()->index();
-            $table->timestamp('email_verified_at')->nullable();
             $table->enum('role', ['admin', 'staff'])->default('staff'); 
             $table->string('password');
             $table->timestamps();
