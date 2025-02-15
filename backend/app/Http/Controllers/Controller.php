@@ -8,9 +8,6 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 abstract class Controller
 {
-    /**
-     * Success response.
-     */
     protected function successResponse($data, string $message = 'Success', int $status = 200): JsonResponse
     {
         return response()->json([
@@ -20,27 +17,21 @@ abstract class Controller
         ], $status);
     }
 
-    /**
-     * Cursor pagination response (Best for Performance).
-     */
     protected function paginatedResponse(AnonymousResourceCollection $resourceCollection, CursorPaginator $paginator): JsonResponse
     {
         return response()->json([
             'success' => true,
             'message' => 'Data retrieved successfully.',
-            'data' => $resourceCollection->collection, // Extracts the items
+            'data' => $resourceCollection->collection, 
             'pagination' => [
                 'per_page' => $paginator->perPage(),
                 'has_more_pages' => $paginator->hasMorePages(),
-                'next_cursor' => $paginator->nextCursor()?->encode(),  // Encoded cursor for next page
-                'prev_cursor' => $paginator->previousCursor()?->encode(), // Encoded cursor for previous page
+                'next_cursor' => $paginator->nextCursor()?->encode(),  
+                'prev_cursor' => $paginator->previousCursor()?->encode(), 
             ]
         ]);
     }
 
-    /**
-     * Error response.
-     */
     protected function errorResponse(string $message, int $status = 400, array $errors = []): JsonResponse
     {
         return response()->json([
