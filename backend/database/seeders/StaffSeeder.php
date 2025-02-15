@@ -2,12 +2,11 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 
-class AdminUserSeeder extends Seeder
+class StaffSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -15,12 +14,12 @@ class AdminUserSeeder extends Seeder
     public function run(): void
     {
         User::updateOrCreate(
-            ['email' => 'admin@example.com'], 
+            ['email' => 'staff@example.com'], 
             [
-                'name' => 'Admin User',
-                'email' => 'admin@example.com',
+                'name' => 'Staff Member',
+                'email' => 'staff@example.com',
                 'password' => Hash::make('password123'), 
-                'role' => 'admin',
+                'role' => 'staff',
             ]
         );
     }
